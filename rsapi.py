@@ -36,6 +36,18 @@ class rsapi:
             retVal[param+"[]"] = data
         return retVal
 
+    def rs_hash_generator(self, data, param):
+        retval = {}
+        for k,v in data.iteritems():
+            if type(v) is dict:
+                intval = rs_hash_generator(v, param)
+                for a,c in intval.iteritems():
+                    m = re.search('\[([a-zA-Z0-9]*)\]', a)
+                    retval[param+"["+k+"][" + m.group(1) + "]"] = c
+            else:
+                retval[param+"["+k+"]"] = v
+        return retval
+
     def rs_get(self, api_uri, resp_id=200):
         r = requests.get(api_uri, headers=self.headers)
         val = self.rs_error_check(r, resp_id)

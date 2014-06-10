@@ -1,0 +1,7 @@
+{
+    "apibase": "https://us-4.rightscale.com/api",
+    "logins": {
+        "prod": "", 
+        "dev": ""
+        }
+}

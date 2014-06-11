@@ -2,8 +2,10 @@
 
 from rsapi import rsapi
 from rsapi_repository import rsapi_repository as repo
+from rsapi_cookbooks import rsapi_cookbooks as cbook
 import simplejson as json
 import re
+from threading import Timer
 
 class rsapi_working():
     """Class for working functions to support scripts as-needed, and could be used in general
@@ -18,6 +20,7 @@ class rsapi_working():
         """
         self.api = rsapi(api_type)
         self.repo = repo(api_type)
+        self.books = cbook(api_type)
         self.regex = {'gitname': re.compile("(.*)\.git")}
         with open('config.json','r') as f:
             self.config = json.loads(f.read())
@@ -45,3 +48,26 @@ class rsapi_working():
                     reponame = self.regex['gitname'].search(v2.split('/').pop()).group(1)
             retval[reponame] = repoid
         return retval
+
+    def update_template_cookbook(self, cbook, count = 0, tries = 20):
+        data = self.books.get_cookbooks()
+        repos = []
+        for i in data: 
+            if i['name'].lower() == cbook.lower():
+                repos.append(i['id'])
+        intcount = len(repos)
+        if (count == intcount or count == 0) and tries > 0:
+            t = Timer(15.0, self.update_template_cookbook, [cbook, intcount, tries-1])
+            t.start()
+        else:
+            repos.sort()
+            last = repos.pop()
+            templatelist = []
+            for i in repos:
+                attaches = self.books.get_attachments(i)
+                for attach in attaches:
+                    for link in attach['links']:
+                        if link['rel'] == "server_template":
+                            templatelist.append(link['href'].split("/")[3])
+            for i in templatelist:
+                self.books.make_attachment(int(i), last)

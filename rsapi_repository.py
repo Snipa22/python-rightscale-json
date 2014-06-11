@@ -143,7 +143,7 @@ class rsapi_repository():
                 t = Timer(15, self.import_cookbooks, (repoid, commitid, trial))
                 t.start()
 
-    def refetch_repository(self, repoid, commitid, auto_import=False):
+    def refetch_repository(self, repoid, auto_import=False):
         """Implements the refetch function of Repositories
 
         Schedules import of cookbook from remote repository.

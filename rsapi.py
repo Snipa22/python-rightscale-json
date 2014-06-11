@@ -17,7 +17,7 @@ class rsapi:
 
     This exists for error handling, as well as generating the weird ways that RS handles it's hashes/arrays
     """
-    def __init__(self, api_type="dev", debug_mode=False):
+    def __init__(self, api_type="dev", debug_mode=True):
         """Init the class
 
         Can have debug mode turned on, sets API type, also sets the base headers because RS requires it in a header.

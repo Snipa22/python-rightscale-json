@@ -115,20 +115,6 @@ class rsapi_repository():
             update_data = "text:" + cred
         return self.api.rs_put(api_uri, 204, update_data)
 
-    def delete_repository(self, repoid, really_now=False):
-        """Implements the destroy function of Repositories
-
-        Designed to delete a repository
-
-        Complete - Works!
-
-        Args:
-            repoid (int): Rightscale ID of the repository
-            really_now (bool): Another flag to make sure you really want to delete this thing.
-        """
-        api_uri="%s/repositories/%d" % (self.config['apibase'], repoid)
-        return self.api.rs_delete(api_uri, 204, really_now)
-
     def import_cookbooks(self, repoid, commitid, trial=0):
         """Implements the cookbook_import function of Repositories
 
@@ -157,7 +143,7 @@ class rsapi_repository():
                 t = Timer(15, self.import_cookbooks, (repoid, commitid, trial))
                 t.start()
 
-    def refetch_repository(self, repoid, auto_import=False):
+    def refetch_repository(self, repoid, commitid):
         """Implements the refetch function of Repositories
 
         Schedules import of cookbook from remote repository.
@@ -166,7 +152,7 @@ class rsapi_repository():
 
         Args:
             repoid (dict): Rightscale ID of the repository
-            auto_import (bool): Sets if the system should auto-import or not
+            commitid (string): String of the latest commit to ensure that the API imports correctly
         """
         if auto_import:
             postdata = {'auto_import': 'true'}
@@ -174,7 +160,9 @@ class rsapi_repository():
             postdata = {'auto_import': 'false'}
         api_uri="%s/repositories/%d/refetch.json" % (self.config['apibase'], repoid)
         refetch = self.api.rs_post(api_uri, 204)
+        self.import_cookbooks(repoid, commitd)
         return refetch
+
 
     def resolve_repository(self, books = None):
         """Implements the resolve function of Repositories

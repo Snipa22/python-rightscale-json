@@ -143,7 +143,7 @@ class rsapi_repository():
                 t = Timer(15, self.import_cookbooks, (repoid, commitid, trial))
                 t.start()
 
-    def refetch_repository(self, repoid, commitid):
+    def refetch_repository(self, repoid, commitid, auto_import=False):
         """Implements the refetch function of Repositories
 
         Schedules import of cookbook from remote repository.
@@ -153,14 +153,14 @@ class rsapi_repository():
         Args:
             repoid (dict): Rightscale ID of the repository
             commitid (string): String of the latest commit to ensure that the API imports correctly
+            auto_import (bool): Sets if the system should auto-import or not
         """
         if auto_import:
             postdata = {'auto_import': 'true'}
         else:
             postdata = {'auto_import': 'false'}
         api_uri="%s/repositories/%d/refetch.json" % (self.config['apibase'], repoid)
-        refetch = self.api.rs_post(api_uri, 204)
-        self.import_cookbooks(repoid, commitd)
+        refetch = self.api.rs_post(api_uri, 204, postdata)
         return refetch
 
 

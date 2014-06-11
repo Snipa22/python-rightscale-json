@@ -16,7 +16,7 @@ def dev():
         rsapi = repo()
         support_repos = working()
         repos = support_repos.fetch_repository_map()
-        rsapi.refetch_repository(repos[payload['repository']['name']], payload['head_commit']['id'])
+        rsapi.refetch_repository(repos[payload['repository']['name']])
     return json.dumps({'msg': "Hi!"})
 
 @app.route("/prod", methods=['POST'])
@@ -30,7 +30,7 @@ def prod():
         rsapi = repo(api_type="prod")
         support_repos = working()
         repos = support_repos.fetch_repository_map()
-        rsapi.refetch_repository(repos[payload['repository']['name']], payload['head_commit']['id'])
+        rsapi.refetch_repository(repos[payload['repository']['name']])
     return json.dumps({'msg': "Hi!"})
 
 if __name__ == "__main__":

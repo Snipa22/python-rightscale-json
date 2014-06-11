@@ -3,6 +3,7 @@
 import requests
 import simplejson as json
 import sys
+import re
 from threading import Timer
 
 rs_errors = {301: "API Moved, check response", 400: "Missing paramater",
@@ -14,16 +15,13 @@ rs_errors = {301: "API Moved, check response", 400: "Missing paramater",
 class rsapi:
     def __init__(self, api_type="dev"):
         self.headers = {'X-API-Version': '1.5'}
-        self.rs_login(api_type)
         with open('config.json','r') as f:
-            self.config = f.read()
+            self.config = json.loads(f.read())
+        self.rs_login(api_type)
+
 
     def rs_login(self, api_type="dev"):
-        if api_type == "prod":
-            payload = {'refresh_token' : self.config['logins']['prod']}
-        else:
-            payload = {'refresh_token' : self.config['logins']['dev']}
-        payload['grant_type'] = "refresh_token"
+        payload = {'refresh_token' : self.config['logins'][api_type], 'grant_type': 'refresh_token'}
         r = requests.post("%s/oauth2" % self.config['apibase'], data=payload, headers=self.headers)
         if self.rs_error_check(r, 200) == False:
             sys.exit(0)
@@ -61,7 +59,7 @@ class rsapi:
         else:
             r = requests.post(api_uri, headers=self.headers, data=payload)
         val = self.rs_error_check(r, resp_id)
-        if val == "":
+        if val == "" or val == None:
             return val
         return json.loads(val)
 
@@ -75,7 +73,8 @@ class rsapi:
                 else:
                     raise rsapi_exception("API Call %s failed with %d error code and RS Error: %s.\nResponse body is: %s" % (r.url, r.status_code, rs_errors[r.status_code], r.text))
             except rsapi_exception, e:
-                print e.value
+                print "Exception! " + e.value
+                return None
 
 class rsapi_exception(Exception):
     def __init__(self, value):

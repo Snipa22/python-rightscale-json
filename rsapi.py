@@ -68,7 +68,7 @@ class rsapi:
         """
         retVal = {}
         for i in data:
-            retVal[param+"[]"] = data
+            retVal[param+"[]"] = i
         return retVal
 
     def rs_hash_generator(self, data, param):
@@ -100,7 +100,7 @@ class rsapi:
                 retval[param+"["+k+"]"] = v
         return retval
 
-    def rs_get(self, api_uri, resp_id=200):
+    def rs_get(self, api_uri, resp_id=200, payload = None):
         """Performs a GET request to the RS API
 
         Basic, bog-standard authenticated GET request
@@ -108,15 +108,18 @@ class rsapi:
         Args:
             api_uri (string): API call to be made, full URI.
             resp_id (int): Expected result from the API.  Flags an exception if not valid.
+            payload (dict): Payload to be sent, can be null
 
         returns:
             string or dict: Varies depending on the result of the API.
         """
-        r = requests.get(api_uri, headers=self.headers)
-        val = self.rs_error_check(r, resp_id)
-        if val == "":
-            return val
-        return json.loads(val)
+        if self.debug == True:
+            print "GET: API_URI: %s\nHeaders: %s\nData: %s\n" % (api_uri, self.headers, payload)
+        if payload == None:
+            r = requests.get(api_uri, headers=self.headers)
+        else:
+            r = requests.get(api_uri, headers=self.headers, params=payload)
+        return self.rs_error_check(r, resp_id)
 
     def rs_post(self, api_uri, resp_id=200, payload = None):
         """Performs a POST request to the RS API
@@ -131,16 +134,57 @@ class rsapi:
         returns:
             string or dict: Varies depending on the result of the API.
         """
+        if self.debug == True:
+            print "POST: API_URI: %s\nHeaders: %s\nData: %s\n" % (api_uri, self.headers, payload)
         if payload == None:
             r = requests.post(api_uri, headers=self.headers)
         else:
-            if self.debug == True:
-                print "API_URI: %s\nHeaders: %s\nPostData: %s\n" % (api_uri, self.headers, payload)
             r = requests.post(api_uri, headers=self.headers, data=payload)
-        val = self.rs_error_check(r, resp_id)
-        if val == "" or val == None:
-            return val
-        return json.loads(val)
+        return self.rs_error_check(r, resp_id)
+
+    def rs_put(self, api_uri, resp_id=200, payload = None):
+        """Performs a PUT request to the RS API
+
+        Basic, bog-standard authenticated PUT request
+
+        Args:
+            api_uri (string): API call to be made, full URI.
+            resp_id (int): Expected result from the API.  Flags an exception if not valid.
+            payload (dict): Payload to be sent, can be null
+
+        returns:
+            string or dict: Varies depending on the result of the API.
+        """
+        if self.debug == True:
+            print "PUT: API_URI: %s\nHeaders: %s\nData: %s\n" % (api_uri, self.headers, payload)
+        if payload == None:
+            r = requests.put(api_uri, headers=self.headers)
+        else:
+            r = requests.put(api_uri, headers=self.headers, data=payload)
+        return self.rs_error_check(r, resp_id)
+
+    def rs_delete(self, api_uri, resp_id=200, want_to=False):
+        """Performs a DELETE request to the RS API
+
+        Basic, bog-standard authenticated DELETE request
+
+        Args:
+            api_uri (string): API call to be made, full URI.
+            resp_id (int): Expected result from the API.  Flags an exception if not valid.
+            want_to (bool): Needs to be set True to run
+
+        returns:
+            string or dict: Varies depending on the result of the API.
+
+        There's a whole lot of no validation in this in RS.  Be careful por favour!
+        """
+        if want_to == False:
+            return False
+        if self.debug == True:
+            print "Delete: API_URI: %s\nHeaders: %s\n" % (api_uri, self.headers)
+        r = requests.delete(api_uri, headers=self.headers)
+        return self.rs_error_check(r, resp_id)
+
 
     def rs_error_check(self, r, resp_id):
         """Provides validation after a request to the RS API
@@ -154,7 +198,10 @@ class rsapi:
             string or None: String if the result is valid, None if we flag an exception
         """
         if r.status_code == resp_id:
-            return r.text
+            try:
+                return json.loads(r.text)
+            except:
+                return r.text
         else:
             try:
                 if r.status_code not in rs_errors:

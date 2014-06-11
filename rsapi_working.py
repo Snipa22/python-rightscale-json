@@ -6,7 +6,16 @@ import simplejson as json
 import re
 
 class rsapi_working():
+    """Class for working functions to support scripts as-needed, and could be used in general
+
+    No API calls should be made directly
+    """
     def __init__(self, api_type="dev"):
+        """Fairly simple init, not too much it has to call on
+
+        KwArgs:
+            api_type (str): Determines what API connection is being opened.  Rightscale maps API:Account, so this determines the API key that will be loaded from config.json in rsapi
+        """
         self.api = rsapi(api_type)
         self.repo = repo(api_type)
         self.regex = {'gitname': re.compile("(.*)\.git")}
@@ -14,6 +23,17 @@ class rsapi_working():
             self.config = json.loads(f.read())
 
     def fetch_repository_map(self):
+        """Maps the git repo name to the rightscale ID
+
+        Example: git@place:user/(name).git
+        Extracts the name and maps to rightscale ID.
+
+        Returns:
+            dict.   Example::
+                {'thisisagit': 243757345}
+
+        General formatting is Name: ID, for usage later in quick lookups.  Used in the example rightscale_github.py
+        """
         # Designed for use with GitHub only.  Do not rely on for any other type!
         data = self.repo.get_repositories()
         retval={}

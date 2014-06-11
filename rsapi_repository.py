@@ -5,8 +5,15 @@ import simplejson as json
 
 class rsapi_repository():
     """Class for handling all repository API access
+
+    Pretty much if the call has to access an API URI for repositories, it ends up here.
     """
     def __init__(self, api_type="dev"):
+        """Fairly simple init, not too much it has to call on
+
+        Kwargs:
+            api_type (str): Determines what API connection is being opened.  Rightscale maps API:Account, so this determines the API key that will be loaded from config.json in rsapi
+        """
         self.api = rsapi(api_type)
         with open('config.json','r') as f:
             self.config = json.loads(f.read())
@@ -15,12 +22,18 @@ class rsapi_repository():
         """Implements the index function of Repositories
 
         Provides a standard python dict of all repositories available from the base API key
-
         """
         api_uri="%s/repositories" % self.config['apibase']
         return self.api.rs_get(api_uri)
 
     def get_repository_status(self, repoid):
+        """Implements the show function of Repositories
+
+        Provides a standard ptyon dict of all available repostory information.
+
+        Args:
+            repoid (int): Rightscale ID of the repository in question to be imported
+        """
         api_uri="%s/repositories/%d.json" % (self.config['apibase'], repoid)
         return self.api.rs_get(api_uri)
             

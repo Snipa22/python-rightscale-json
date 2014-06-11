@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from flask import Flask, request, abort
 import simplejson as json
+from rsapi.rsapi_repository import rsapi_repository as repo
 from rsapi.rsapi_working import rsapi_working as working
 app = Flask(__name__)
 
@@ -12,9 +13,10 @@ def dev():
         return json.dumps({'msg': "Wrong event type"})
     payload = json.loads(request.form['payload'])
     if "Merge pull request" in payload['head_commit']['message']:
-        rsapi = working()
-        repos = rsapi.fetch_repository_map()
-        rsapi.refetch_repository(reops[payload['repository']['name']], payload['head_commit']['id'])
+        rsapi = repo()
+        support_repos = working()
+        repos = support_repos.fetch_repository_map()
+        rsapi.refetch_repository(repos[payload['repository']['name']], payload['head_commit']['id'])
     return json.dumps({'msg': "Hi!"})
 
 @app.route("/prod", methods=['POST'])
@@ -25,9 +27,10 @@ def prod():
         return json.dumps({'msg': "Wrong event type"})
     payload = json.loads(request.form['payload'])
     if "Merge pull request" in payload['head_commit']['message']:
-        rsapi = working(api_type="prod")
-        repos = rsapi.fetch_repository_map()
-        rsapi.refetch_repository(reops[payload['repository']['name']], payload['head_commit']['id'])
+        rsapi = repo(api_type="prod")
+        support_repos = working()
+        repos = support_repos.fetch_repository_map()
+        rsapi.refetch_repository(repos[payload['repository']['name']], payload['head_commit']['id'])
     return json.dumps({'msg': "Hi!"})
 
 if __name__ == "__main__":

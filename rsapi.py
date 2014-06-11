@@ -13,12 +13,12 @@ rs_errors = {301: "API Moved, check response", 400: "Missing paramater",
 500: "Oooooh.  Rightscale derped!  Ping RS with everything ya got"}
 
 class rsapi:
-    def __init__(self, api_type="dev"):
+    def __init__(self, api_type="dev", debug_mode=False):
         self.headers = {'X-API-Version': '1.5'}
         with open('config.json','r') as f:
             self.config = json.loads(f.read())
         self.rs_login(api_type)
-
+        self.debug = debug_mode
 
     def rs_login(self, api_type="dev"):
         payload = {'refresh_token' : self.config['logins'][api_type], 'grant_type': 'refresh_token'}
@@ -57,6 +57,8 @@ class rsapi:
         if payload == None:
             r = requests.post(api_uri, headers=self.headers)
         else:
+            if self.debug == True:
+                print "API_URI: %s\nHeaders: %s\nPostData: %s\n" % (api_uri, self.headers, payload)
             r = requests.post(api_uri, headers=self.headers, data=payload)
         val = self.rs_error_check(r, resp_id)
         if val == "" or val == None:
